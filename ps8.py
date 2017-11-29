@@ -92,15 +92,15 @@ def plot_training_data_binary(data,w,b):
   plt.axis([-m, m, -m, m])
 
   x = np.linspace(-10,10,1000)
-  if w[0] == 0:
-    plt.axhline(-b/w[1])
-  elif w[1] == 0:
-    plt.axhline(-b/w[0])
-  else:
-    slope = -w[0]/w[1]
-    plt.plot(x, slope*x - b/w[1])
-    plt.plot(x,-x/slope)
-
+  # if w[0] == 0:
+  #   plt.axhline(-b/w[1])
+  # elif w[1] == 0:
+  #   plt.axhline(-b/w[0])
+  # else:
+  #   slope = -w[0]/w[1]
+  #   plt.plot(x, slope*x - b/w[1])
+  #   plt.plot(x,-x/slope)
+  plt.plot(x,((-1*float(w[0])))/float(w[1])*x + b)
 
   plt.show()
 
@@ -124,7 +124,7 @@ def distance_point_to_hyperplane(pt,w,b):
   p = np.dot(np.dot(u,pt),u) # Projection of pt onto norm(w)
   # TO-D0: Make the bias negative later for testing
 
-  return math.sqrt(sum(p*p)) + (b/len_w) # Return the length of p and add the bias
+  return math.sqrt(sum(p*p)) + (-1*b/len_w) # Return the length of p and add the bias
 
 #Compute minimum margin
 def compute_margin(data, w, b):
@@ -149,16 +149,17 @@ def svm_train_brute(data):
       w = np.array(p1[:-1]-p2[:-1])
       # ortho_line = np.array([w[1],-1*w[0]])
       # slope = ortho_line[1]/ortho_line[0]
-      # b = -1*slope*mid_point[0] + mid_point[1]
-
-      b = -1*sum(w*mid_point)
+      slope = -1*(float(w[0])/float(w[1]))
+      b = (-slope*float(mid_point[0]) + float(mid_point[1]))
 
 
       if max_margin < compute_margin(data,w,b):
         support_vectors = np.array([p1,p2])
         w_f = w
         b_f = b
-        max_margin < compute_margin(data, w, b)
+        max_margin = compute_margin(data, w, b)
+
+  w_f = w_f/math.sqrt(sum(w_f*w_f))
 
   return [w_f,b_f,support_vectors]
 
@@ -172,8 +173,11 @@ def svm_test_brute(w,b,x):
 
 da = np.array([[4,2,-1],[6,1,1]])
 
-[w,b,s] = svm_train_brute(generate_training_data_binary(2))
-plot_training_data_binary(generate_training_data_binary(2),w,b)
+# [w,b,s] = svm_train_brute(generate_training_data_binary(2))
+# plot_training_data_binary(generate_training_data_binary(2),w,b)
+da = generate_training_data_binary(3)
+[w,b,s] = svm_train_brute(da)
+plot_training_data_binary(da,w,b)
 print "W: ", w
 print "b: ", b
 print "s: ", s
