@@ -92,15 +92,16 @@ def plot_training_data_binary(data,w,b):
   plt.axis([-m, m, -m, m])
 
   x = np.linspace(-10,10,1000)
-  # if w[0] == 0:
-  #   plt.axhline(-b/w[1])
-  # elif w[1] == 0:
-  #   plt.axhline(-b/w[0])
-  # else:
+  if w[0] == 0:
+    plt.axhline(-b/w[1])
+  elif w[1] == 0:
+    plt.axhline(-b/w[0])
+  else:
+    plt.plot(x, ((-1 * float(w[0]))) / float(w[1]) * x + b)
   #   slope = -w[0]/w[1]
   #   plt.plot(x, slope*x - b/w[1])
   #   plt.plot(x,-x/slope)
-  plt.plot(x,((-1*float(w[0])))/float(w[1])*x + b)
+  # plt.plot(x,((-1*float(w[0])))/float(w[1])*x + b)
 
   plt.show()
 
@@ -149,9 +150,14 @@ def svm_train_brute(data):
       w = np.array(p1[:-1]-p2[:-1])
       # ortho_line = np.array([w[1],-1*w[0]])
       # slope = ortho_line[1]/ortho_line[0]
-      slope = -1*(float(w[0])/float(w[1]))
+      slope = None
+      if w[0] == 0:
+        slope = 0
+      elif w[1] == 0:
+        slope = 0
+      else:
+        slope = -1*(float(w[0])/float(w[1]))
       b = (-slope*float(mid_point[0]) + float(mid_point[1]))
-
 
       if max_margin < compute_margin(data,w,b):
         support_vectors = np.array([p1,p2])
@@ -175,7 +181,7 @@ da = np.array([[4,2,-1],[6,1,1]])
 
 # [w,b,s] = svm_train_brute(generate_training_data_binary(2))
 # plot_training_data_binary(generate_training_data_binary(2),w,b)
-da = generate_training_data_binary(3)
+da = generate_training_data_binary(2)
 [w,b,s] = svm_train_brute(da)
 plot_training_data_binary(da,w,b)
 print "W: ", w
