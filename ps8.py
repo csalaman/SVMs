@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import sys
+import math
 
 def generate_training_data_binary(num):
   if num == 1:
@@ -81,7 +82,7 @@ def generate_training_data_multi(num):
 
   return [data, C]
 
-def plot_training_data_binary(data):
+def plot_training_data_binary(data,w,b):
   for item in data:
     if item[-1] == 1:
       plt.plot(item[0], item[1], 'b+')
@@ -89,6 +90,18 @@ def plot_training_data_binary(data):
       plt.plot(item[0], item[1], 'ro')
   m = max(data.max(), abs(data.min()))+1
   plt.axis([-m, m, -m, m])
+
+  x = np.linspace(-10,10,1000)
+  if w[0] == 0:
+    plt.axhline(-b/w[1])
+  elif w[1] == 0:
+    plt.axhline(-b/w[0])
+  else:
+    slope = -w[0]/w[1]
+    plt.plot(x, slope*x - b/w[1])
+    plt.plot(x,-x/slope)
+
+
   plt.show()
 
 def plot_training_data_multi(data):
@@ -101,3 +114,66 @@ def plot_training_data_multi(data):
   plt.axis([-m, m, -m, m])
   plt.show()
 
+
+# Distance from point to hyperplane
+def distance_point_to_hyperplane(pt,w,b):
+  pt = np.array(pt)
+  w = np.array(w)
+  len_w = math.sqrt(sum(w*w))
+  u = w / len_w     #normalized W
+  p = np.dot(np.dot(u,pt),u) # Projection of pt onto norm(w)
+  # TO-D0: Make the bias negative later for testing
+
+  return math.sqrt(sum(p*p)) + (b/len_w) # Return the length of p and add the bias
+
+#Compute minimum margin
+def compute_margin(data, w, b):
+  mini = float('inf')
+  for pt in data:
+      if 2*distance_point_to_hyperplane(pt[:-1],w,b) < mini:
+        mini = 2*distance_point_to_hyperplane(pt[:-1],w,b)
+  return mini
+
+# Train SVM brute force
+def svm_train_brute(data):
+  pos = data[data[:,2] == 1]
+  neg = data[data[:,2] == -1]
+  max_margin = -1*float('inf')
+
+  w_f = None
+  b_f = None
+  support_vectors = None
+  for p1 in pos:
+    for p2 in neg:
+      mid_point = np.array([(p1[0]+p2[0])/2,(p1[1]+p2[1])/2])
+      w = np.array(p1[:-1]-p2[:-1])
+      # ortho_line = np.array([w[1],-1*w[0]])
+      # slope = ortho_line[1]/ortho_line[0]
+      # b = -1*slope*mid_point[0] + mid_point[1]
+
+      b = -1*sum(w*mid_point)
+
+
+      if max_margin < compute_margin(data,w,b):
+        support_vectors = np.array([p1,p2])
+        w_f = w
+        b_f = b
+        max_margin < compute_margin(data, w, b)
+
+  return [w_f,b_f,support_vectors]
+
+
+# SVM prediction of class
+def svm_test_brute(w,b,x):
+  if w*x + b > 0:
+    return 1
+  else:
+    return -1
+
+da = np.array([[4,2,-1],[6,1,1]])
+
+[w,b,s] = svm_train_brute(generate_training_data_binary(2))
+plot_training_data_binary(generate_training_data_binary(2),w,b)
+print "W: ", w
+print "b: ", b
+print "s: ", s
