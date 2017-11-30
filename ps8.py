@@ -185,6 +185,8 @@ def svm_train_brute(data):
                         # Calculate the weights and bias
                         mid_point = np.array([(float(p[0] + q[0])) / 2, (float(p[1] + q[1])) / 2])
                         w = np.array(p[:-1] - q[:-1])
+                        if np.sqrt(np.dot(w, w)) == 0:
+                            break
                         w = w / np.sqrt(np.dot(w, w))
                         b = -1 * (np.dot(w, (mid_point)))
 
@@ -212,6 +214,8 @@ def svm_train_brute(data):
                     # Calculate the weights and bias
                     mid_point = np.array([(float(p[0] + q[0])) / 2, (float(p[1] + q[1])) / 2])
                     w = np.array(p[:-1] - q[:-1])
+                    if np.sqrt(np.dot(w, w)) == 0:
+                        break
                     w = w / np.sqrt(np.dot(w, w))
                     b = -1 * (np.dot(w, (mid_point)))
 
@@ -236,11 +240,11 @@ def svm_test_brute(w, b, x):
         return -1
 
 
-# da = np.array([[4,2,-1],[6,1,1]])
-da = generate_training_data_binary(4)
-[w, b, s] = svm_train_brute(da)
-plot_training_data_binary(da, w, b)
-print "W: ", w
-print "b: ", b
-print "s: ", s, "\n"
-print da
+# # da = np.array([[4,2,-1],[6,1,1]])
+# da = generate_training_data_binary(4)
+# [w, b, s] = svm_train_brute(da)
+# plot_training_data_binary(da, w, b)
+# print "W: ", w
+# print "b: ", b
+# print "s: ", s, "\n"
+# print da
