@@ -15,3 +15,15 @@ for i in range(1,5):
 
     print("     ############################################\n")
 print "#################################################"
+
+
+(data,C) = generate_training_data_multi(1)
+[W,B] = svm_train_multiclass(generate_training_data_multi(1))
+print W,B
+plot_hyper_multi(W,B,(data,C))
+
+[w1,b1,s1] = svm_train_brute(generate_training_data_binary(5))
+[w2,b2,s2] = kernel_svm_train(generate_training_data_binary(5))
+
+plot_hyper_binary(w1,b1,generate_training_data_binary(5))
+# plot_hyper_binary(w2,b2,generate_training_data_binary(5))
