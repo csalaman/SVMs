@@ -4,7 +4,7 @@ print "########### Problem 1: Report 1 #################"
 for i in range(1,5):
     print("     ######### Dataset "+str(i)+" ###############")
     [w,b,S] = svm_train_brute(generate_training_data_binary(i))
-    plot_training_data_binary(generate_training_data_binary(i),w,b)
+    plot_hyper_binary(w,b,generate_training_data_binary(i))
     print("     Weights: " +str(w))
     print("     Bias: " + str(b))
     print("     Support Vectors:")

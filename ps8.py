@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import sys
 import math
+import copy
 
 
 def generate_training_data_binary(num):
@@ -85,7 +86,7 @@ def generate_training_data_multi(num):
     return [data, C]
 
 
-def plot_training_data_binary(data, w, b):
+def plot_training_data_binary(data):
     for item in data:
         if item[-1] == 1:
             plt.plot(item[0], item[1], 'b+')
@@ -94,11 +95,11 @@ def plot_training_data_binary(data, w, b):
     m = max(data.max(), abs(data.min())) + 1
     plt.axis([-m, m, -m, m])
 
-    line = np.linspace(-100, 100)
-    if w[1] != 0:
-        plt.plot(line, (-w[0] * line - b) / w[1])
-    else:
-        plt.axvline(x=b)
+    # line = np.linspace(-100, 100)
+    # if w[1] != 0:
+    #     plt.plot(line, (-w[0] * line - b) / w[1])
+    # else:
+    #     plt.axvline(x=b)
 
     plt.show()
 
@@ -111,13 +112,51 @@ def plot_training_data_multi(data):
         plt.plot(item[0], item[1], colors[int(item[2]) - 1] + shapes[int(item[2]) - 1])
     m = max(data.max(), abs(data.min())) + 1
     plt.axis([-m, m, -m, m])
+
     plt.show()
 
+def plot_hyper_binary(w,b,data):
+    line = np.linspace(-100, 100)
+    if w[1] != 0:
+        plt.plot(line, (-w[0] * line - b) / w[1])
+    else:
+        plt.axvline(x=b)
+    plot_training_data_binary(data)
 
+def plot_hyper_multi(W,B,(data,C)):
+    for w,b in zip(W,B):
+        line = np.linspace(-100, 100)
+        if w[1] != 0:
+            plt.plot(line, (-w[0] * line - b) / w[1])
+        else:
+            plt.axvline(x=b)
+    plot_training_data_multi(data)
 # Distance from point to hyperplane
 def distance_point_to_hyperplane(pt, w, b):
     return abs(np.dot(pt, w) + b) / np.sqrt(np.dot(w, w))
 
+##############################
+def plot_training_data_multi_2(data, W, B):
+  colors = ['b', 'r', 'g', 'm']
+  shapes = ['+', 'o', '*', '.']
+
+  for item in data:
+    plt.plot(item[0], item[1], colors[int(item[2])-1] + shapes[int(item[2])-1])
+  x = np.linspace(10,10,100)
+  for c in range(len(W)):
+      if W[c][0] == 0:
+          plt.axhline(-B[c]/W[c][1])
+      elif W[c][1] == 0:
+          plt.axvline(x = -B[c]/W[c][0])
+      else:
+          m = -W[c][0]/W[c][1]
+          yint = -B[c]/W[c][1]
+          plt.plot(x, m*x + yint)
+  m = max(data.max(), abs(data.min()))+1
+  plt.axis([-m, m, -m, m])
+  plt.show()
+
+############################3
 
 # Compute minimum margin
 def compute_margin(data, w, b):
@@ -165,11 +204,14 @@ def svm_train_brute(data):
 
             elif compute_margin(data, w, b) >= max_margin:
                 max_margin = compute_margin(data, w, b)
-                if distance_point_to_hyperplane(p1[:-1], w, b) < distance_point_to_hyperplane(s_f[0][:-1], w_f,
-                                                                                              b_f):
-                    s_f = np.array([p1, p2])
-                    w_f = w
-                    b_f = b
+                # if distance_point_to_hyperplane(p1[:-1], w, b) < distance_point_to_hyperplane(s_f[0][:-1], w_f,
+                #                                                                               b_f):
+                #     s_f = np.array([p1, p2])
+                #     w_f = w
+                #     b_f = b
+                s_f = np.array([p1, p2])
+                w_f = w
+                b_f = b
 
 
 # 3 vectors; 2 positives and 1 negative
@@ -189,17 +231,20 @@ def svm_train_brute(data):
                             break
                         w = w / np.sqrt(np.dot(w, w))
                         b = -1 * (np.dot(w, (mid_point)))
-
+                        print "curr: ", w
                         # Determine best params
                         if compute_margin(data, w, b) >= max_margin:
-                            if distance_point_to_hyperplane(p[:-1], w, b) < distance_point_to_hyperplane(s_f[0][:-1],
-                                                                                                              w_f,
-                                                                                                              b_f):
-                                  max_margin = compute_margin(data, w, b)
-                                  s_f = np.array([p1, p2,q])
-                                  w_f = w
-                                  b_f = b
-
+                            # if distance_point_to_hyperplane(p[:-1], w, b) < distance_point_to_hyperplane(s_f[0][:-1],
+                            #                                                                                   w_f,
+                            #                                                                                   b_f):
+                            #       max_margin = compute_margin(data, w, b)
+                            #       s_f = np.array([p1, p2,q])
+                            #       w_f = w
+                            #       b_f = b
+                            max_margin = compute_margin(data, w, b)
+                            s_f = np.array([p1, p2, q])
+                            w_f = w
+                            b_f = b
 
 # 3 vectors; 1 positive and 2 negatives
     for q1 in neg:
@@ -210,7 +255,6 @@ def svm_train_brute(data):
                     v = (q2[:-1] - q1[:-1]) / np.sqrt(np.dot(q2[:-1] - q1[:-1], q2[:-1] - q1[:-1]))
                     # Get the projected point from the line
                     q = np.append(q1[:-1] + (np.dot(v, (p[:-1] - q1[:-1]))) * v, [-1])
-
                     # Calculate the weights and bias
                     mid_point = np.array([(float(p[0] + q[0])) / 2, (float(p[1] + q[1])) / 2])
                     w = np.array(p[:-1] - q[:-1])
@@ -218,17 +262,20 @@ def svm_train_brute(data):
                         break
                     w = w / np.sqrt(np.dot(w, w))
                     b = -1 * (np.dot(w, (mid_point)))
-
+                    print "curr: ",w
                     # Determine best params
                     if compute_margin(data, w, b) >= max_margin:
-                        if distance_point_to_hyperplane(p[:-1], w, b) < distance_point_to_hyperplane(s_f[0][:-1],
-                                                                                                          w_f,
-                                                                                                          b_f):
-                                max_margin = compute_margin(data, w, b)
-                                s_f = np.array([p,q1, q1])
-                                w_f = w
-                                b_f = b
-
+                        # if distance_point_to_hyperplane(p[:-1], w, b) < distance_point_to_hyperplane(s_f[0][:-1],
+                        #                                                                                   w_f,
+                        #                                                                                   b_f):
+                        #         max_margin = compute_margin(data, w, b)
+                        #         s_f = np.array([p,q1, q1])
+                        #         w_f = w
+                        #         b_f = b
+                        max_margin = compute_margin(data, w, b)
+                        s_f = np.array([p,q1, q1])
+                        w_f = w
+                        b_f = b
 
     return [w_f, b_f, s_f]  # SVM params
 
@@ -239,12 +286,28 @@ def svm_test_brute(w, b, x):
     else:
         return -1
 
+############ Part 2 ##################
+def svm_train_multiclass((data,C)):
+    W = []
+    B = []
 
-# # da = np.array([[4,2,-1],[6,1,1]])
-# da = generate_training_data_binary(4)
-# [w, b, s] = svm_train_brute(da)
-# plot_training_data_binary(da, w, b)
-# print "W: ", w
-# print "b: ", b
-# print "s: ", s, "\n"
-# print da
+    for i in range(1,C+1):
+        arr_copy = copy.deepcopy(data)
+        arr_copy[np.where(arr_copy[:, 2] != i), 2] = -1
+        arr_copy[np.where(arr_copy[:,2] == i),2] = 1
+        [w,b,s] = svm_train_brute(arr_copy)
+        print w
+        print len(s)
+        plot_hyper_binary(w,b,arr_copy)
+
+        W.append(w)
+        B.append(b)
+    return [W,B]
+
+
+(data,C) = generate_training_data_multi(1)
+[W,B] = svm_train_multiclass(generate_training_data_multi(1))
+print W,B
+# plot_hyper_multi(W,B,(data,C))
+plot_training_data_multi_2(data,W,B)
+# plot_training_data_multi(data)
